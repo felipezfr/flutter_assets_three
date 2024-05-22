@@ -1,5 +1,5 @@
 
-# TRACTIAN Challenge
+<h1 align="center">TRACTIAN Challenge</h1>
 
 O desafio consiste em construir uma aplicação Flutter, que mostre uma árvore de ativos das empresas (a árvore é basicamente composta por componentes, ativos e localizações), permitindo aplicar filtros específicos e pesquisas.
 
@@ -10,6 +10,14 @@ O desafio consiste em construir uma aplicação Flutter, que mostre uma árvore 
  - Dio para requisições HTTP na API.
  - Either para tratamento de erros.
  - Gerenciamento de estado utilizando apenas ValueNotifier, de forma nativa, deixando o projeto desacoplado de pacotes para isso.
+
+## Arquitetura
+
+A arquitetura escolhida foi a [MiniCore Arch](https://github.com/Flutterando/minicore?tab=readme-ov-file), inspirada na Clean Architecture, sua proposta é desacoplar as camadas mais externas e preservar as regras de Negócio.
+
+![MiniCore Arch](https://raw.githubusercontent.com/Flutterando/minicore/main/imgs/image2.png)
+
+
 
 ## Desafios encontrados
 
