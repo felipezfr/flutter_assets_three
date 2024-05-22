@@ -2,7 +2,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../core/core_module.dart';
 import 'data/repositories/assets_repository_impl.dart';
-import 'interactor/interfaces/i_assets_repository.dart';
+import 'interactor/repositories/i_assets_repository.dart';
 import 'interactor/controller/assets_controller.dart';
 import 'ui/assets_page.dart';
 

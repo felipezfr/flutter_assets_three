@@ -5,7 +5,7 @@ import 'package:tractian_challenge/app/features/home/ui/home_page.dart';
 
 import '../../core/core_module.dart';
 
-import 'interactor/interfaces/i_home_repository.dart';
+import 'interactor/repositories/i_home_repository.dart';
 
 class HomeModule extends Module {
   @override

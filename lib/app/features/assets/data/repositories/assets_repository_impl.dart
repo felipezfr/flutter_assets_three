@@ -9,7 +9,7 @@ import '../../../../core/rest_client/rest_client_request.dart';
 import '../../../../core/types/types.dart';
 import '../../interactor/entities/asset_entity.dart';
 import '../adapters/asset_adapter.dart';
-import '../../interactor/interfaces/i_assets_repository.dart';
+import '../../interactor/repositories/i_assets_repository.dart';
 
 class AssetsRepositoryImpl implements IAssetsRepository {
   final IRestClient restClient;

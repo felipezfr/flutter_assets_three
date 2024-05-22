@@ -3,7 +3,7 @@ import 'package:tractian_challenge/app/core/rest_client/i_rest_client.dart';
 import 'package:tractian_challenge/app/core/types/types.dart';
 import 'package:tractian_challenge/app/features/home/data/adapters/company_adapter.dart';
 import 'package:tractian_challenge/app/features/home/interactor/entities/company_entity.dart';
-import 'package:tractian_challenge/app/features/home/interactor/interfaces/i_home_repository.dart';
+import 'package:tractian_challenge/app/features/home/interactor/repositories/i_home_repository.dart';
 
 import '../../../../core/errors/default_exception.dart';
 import '../../../../core/rest_client/rest_client_exception.dart';

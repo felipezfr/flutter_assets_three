@@ -1,5 +1,5 @@
 import 'package:tractian_challenge/app/core/states/base_state.dart';
-import 'package:tractian_challenge/app/features/home/interactor/interfaces/i_home_repository.dart';
+import 'package:tractian_challenge/app/features/home/interactor/repositories/i_home_repository.dart';
 
 import '../../../../core/controllers/controllers.dart';
 

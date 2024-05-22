@@ -1,3 +1,5 @@
+import 'package:tractian_challenge/app/features/assets/interactor/entities/asset_entity.dart';
+
 enum ComponentStatus {
   alert,
   operating;
@@ -27,6 +29,7 @@ class ComponentModel {
   final ComponentSensorType sensorType;
   final ComponentStatus status;
   final String gatewayId;
+
   ComponentModel({
     required this.id,
     required this.name,
@@ -35,4 +38,26 @@ class ComponentModel {
     required this.status,
     required this.gatewayId,
   });
+
+  static ComponentModel fromMap(Map<String, dynamic> map) {
+    return ComponentModel(
+      id: map['id'],
+      name: map['name'],
+      sensorId: map['sensorId'],
+      sensorType: ComponentSensorType.fromName(map['sensorType']),
+      status: ComponentStatus.fromName(map['status']),
+      gatewayId: map['gatewayId'],
+    );
+  }
+
+  static ComponentModel fromEntity(AssetEntity entity) {
+    return ComponentModel(
+      id: entity.id,
+      name: entity.name,
+      sensorId: entity.sensorId!,
+      sensorType: ComponentSensorType.fromName(entity.sensorType!),
+      status: ComponentStatus.fromName(entity.status!),
+      gatewayId: entity.gatewayId!,
+    );
+  }
 }

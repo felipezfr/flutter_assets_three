@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:tractian_challenge/app/features/assets/interactor/models/component_model.dart';
 
 import '../../interactor/models/asset_model.dart';
 import '../../interactor/models/location_model.dart';
 import 'asset_widget.dart';
+import 'component_widget.dart';
 
 class LocationWidget extends StatefulWidget {
   const LocationWidget({
@@ -17,8 +19,9 @@ class LocationWidget extends StatefulWidget {
 }
 
 class _LocationWidgetState extends State<LocationWidget> {
-  AssetModel? asset;
-  LocationModel? subLocation;
+  List<AssetModel>? assets;
+  List<LocationModel>? subLocations;
+  List<ComponentModel>? components;
   bool isOpen = true;
   @override
   void initState() {
@@ -30,15 +33,17 @@ class _LocationWidgetState extends State<LocationWidget> {
   @override
   Widget build(BuildContext context) {
     if (isOpen) {
-      asset = widget.loc!.asset;
-      subLocation = widget.loc!.subLocation;
+      assets = widget.loc!.assets;
+      subLocations = widget.loc!.subLocations;
+      components = widget.loc!.components;
     } else {
-      asset = null;
-      subLocation = null;
+      assets = null;
+      subLocations = null;
+      components = null;
     }
 
-    final bool hasSubItem =
-        (widget.loc?.asset != null || widget.loc?.subLocation != null);
+    // final bool hasSubItem =
+    //     (widget.loc?.assets != null || widget.loc?.subLocations != null);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -48,7 +53,7 @@ class _LocationWidgetState extends State<LocationWidget> {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (hasSubItem)
+                  if (true)
                     InkWell(
                       onTap: () {
                         setState(() {
@@ -72,14 +77,27 @@ class _LocationWidgetState extends State<LocationWidget> {
                           Text(widget.loc!.name),
                         ],
                       ),
-                      if (subLocation != null)
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: subLocation?.asset != null ? 0 : 20.0,
-                          ),
-                          child: LocationWidget(loc: subLocation),
+                      if (subLocations != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: subLocations!
+                              .map(
+                                (subLocation) =>
+                                    LocationWidget(loc: subLocation),
+                              )
+                              .toList(),
                         ),
-                      if (asset != null) AssetWidget(asset: asset)
+                      if (assets != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: assets!
+                              .map(
+                                (asset) => AssetWidget(asset: asset),
+                              )
+                              .toList(),
+                        ),
+                      if (components != null)
+                        ComponentWidget(components: components),
                     ],
                   ),
                 ],

@@ -1,6 +1,6 @@
 import 'package:tractian_challenge/app/core/controllers/controllers.dart';
 import 'package:tractian_challenge/app/features/assets/interactor/controller/assets_three.dart';
-import 'package:tractian_challenge/app/features/assets/interactor/interfaces/i_assets_repository.dart';
+import 'package:tractian_challenge/app/features/assets/interactor/repositories/i_assets_repository.dart';
 import 'package:tractian_challenge/app/features/assets/interactor/models/asset_three_model.dart';
 import 'package:tractian_challenge/app/features/assets/interactor/state/assets_state.dart';
 
@@ -40,11 +40,9 @@ class AssetsController extends BaseController {
       (right) => assetsEntity = right as List<AssetEntity>,
     );
 
-    final threeModel =
-        AssetsThree().proccessThree(locationsEntity, assetsEntity);
+    final threeModel = AssetsThree().build(locationsEntity, assetsEntity);
 
     originalData = AssetThreeModel(
-      id: 'Original',
       locations: threeModel.locations,
       componentsWithNoParents: threeModel.componentsWithNoParents,
     );
@@ -59,7 +57,6 @@ class AssetsController extends BaseController {
     update(
       AssetsSuccessState(
         data: AssetThreeModel(
-          id: 'Reseted',
           locations: originalData?.locations,
           componentsWithNoParents: originalData?.componentsWithNoParents,
         ),

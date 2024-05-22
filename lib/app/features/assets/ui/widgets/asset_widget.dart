@@ -18,16 +18,16 @@ class AssetWidget extends StatefulWidget {
 
 class _AssetWidgetState extends State<AssetWidget> {
   bool isOpen = true;
-  AssetModel? subAsset;
+  List<AssetModel>? subAssets;
   List<ComponentModel>? components;
 
   @override
   Widget build(BuildContext context) {
     if (isOpen) {
-      subAsset = widget.asset?.subAsset;
+      subAssets = widget.asset?.subAssets;
       components = widget.asset?.components;
     } else {
-      subAsset = null;
+      subAssets = null;
       components = null;
     }
     return Column(
@@ -62,13 +62,19 @@ class _AssetWidgetState extends State<AssetWidget> {
                           Text(widget.asset!.name),
                         ],
                       ),
-                      if (subAsset != null)
-                        AssetWidget(asset: subAsset)
-                      else
+                      if (subAssets != null)
+                        Column(
+                          children: subAssets!
+                              .map(
+                                (subAsset) => AssetWidget(asset: subAsset),
+                              )
+                              .toList(),
+                        ),
+                      if (components != null)
                         Padding(
                           padding: const EdgeInsets.only(left: 22),
                           child: ComponentWidget(components: components),
-                        )
+                        ),
                     ],
                   );
                 }

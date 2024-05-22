@@ -6,179 +6,84 @@ import '../models/component_model.dart';
 import '../models/location_model.dart';
 
 class AssetsThree {
-  AssetThreeModel proccessThree(
+  ///Constroi o model da arvore
+  AssetThreeModel build(
       List<LocationEntity> locationsEntity, List<AssetEntity> assetsEntity) {
-    final locations = _processLocations(locationsEntity);
-
-    return _processAssets(assetsEntity, locations);
-  }
-
-  ///Adiciona sub-location nas location
-  List<LocationModel> _processLocations(List<LocationEntity> locationsEntity) {
-    final List<LocationModel> listLocationModel = [];
-
-    //Adiciona todas localizacoes que nao possuem pai na lista
-    for (var e in locationsEntity) {
-      if (e.parentId == null) {
-        listLocationModel.add(LocationModel(id: e.id, name: e.name));
-      }
+    // 1. Construi um mapa de id para LocationModel
+    Map<String, LocationModel> locationMap = {};
+    for (var item in locationsEntity) {
+      locationMap[item.id] = LocationModel(
+        id: item.id,
+        name: item.name,
+      );
+    }
+    // 1. Construi um mapa de id para AssetModel
+    Map<String, AssetModel> assetMap = {};
+    for (var item in assetsEntity) {
+      assetMap[item.id] = AssetModel(
+        id: item.id,
+        name: item.name,
+      );
     }
 
-    for (var e in locationsEntity) {
-      if (e.parentId != null) {
-        //Procura na lista seu pai
-        final parent = listLocationModel
-            .where((element) => element.id == e.parentId)
-            .firstOrNull;
-        //Adiciona no pai a subLocation
-        parent?.subLocation = LocationModel(id: e.id, name: e.name);
-      }
-    }
-    return listLocationModel;
-  }
-
-  AssetThreeModel _processAssets(
-      List<AssetEntity> assetsEnity, List<LocationModel> locations) {
-    final List<AssetEntity> assetsWithLocation = [];
-    final List<AssetEntity> assetsWithParent = [];
-    final List<AssetEntity> componetsWithAssetsParent = [];
-    final List<AssetEntity> componentsWithNoParents = [];
-
-    for (var asset in assetsEnity) {
-      if (asset.sensorType != null) {
-        //Componet
-        if (asset.locationId == null && asset.parentId == null) {
-          //Nao esta linkado a nenhum asset ou localizacao
-          componentsWithNoParents.add(asset);
-        } else if (asset.locationId != null || asset.parentId != null) {
-          //Componente filho de um asset ou localizacao;
-          componetsWithAssetsParent.add(asset);
+    // 2. Popula os sub assets e componentes
+    List<ComponentModel>? componentsWithNoParent;
+    for (var item in assetsEntity) {
+      if (item.sensorType == null) {
+        //Asset
+        if (item.parentId != null && item.locationId == null) {
+          //Asset filho de outro asset
+          AssetModel parent = assetMap[item.parentId]!;
+          parent.subAssets ??= [];
+          parent.subAssets!.add(assetMap[item.id]!);
+        } else if (item.locationId != null && item.parentId == null) {
+          //Asset filho de uma location
+          LocationModel parent = locationMap[item.locationId]!;
+          parent.assets ??= [];
+          parent.assets!.add(assetMap[item.id]!);
+        } else {
+          //Asset sem pai - Documentacao nao mostra oque fazer nesse caso, nao esta sendo exibido
         }
-      } else if (asset.locationId != null && asset.sensorId == null) {
-        //Asset com localizacao
-        assetsWithLocation.add(asset);
-      } else if (asset.parentId != null && asset.sensorId == null) {
-        //Asset filho, tem outro como asset pai
-        assetsWithParent.add(asset);
+      } else {
+        //Component
+        if (item.parentId != null && item.locationId == null) {
+          //Componente filho de um Asset
+          AssetModel parent = assetMap[item.parentId]!;
+          parent.components ??= [];
+          parent.components!.add(ComponentModel.fromEntity(item));
+        } else if (item.locationId != null && item.parentId == null) {
+          //Componente filho de uma localizacao
+          LocationModel parent = locationMap[item.locationId]!;
+          parent.components ??= [];
+          parent.components!.add(ComponentModel.fromEntity(item));
+        } else {
+          //Component sem pai
+          componentsWithNoParent ??= [];
+          componentsWithNoParent.add(ComponentModel.fromEntity(item));
+        }
       }
     }
-    final buildedTree = _buildAssetTree(
-      locations,
-      assetsWithLocation,
-      assetsWithParent,
-      componetsWithAssetsParent,
-    );
+
+    // 2. Popula as sublocalizações
+    for (var item in locationsEntity) {
+      if (item.parentId != null) {
+        LocationModel parent = locationMap[item.parentId]!;
+        parent.subLocations ??= [];
+        parent.subLocations!.add(locationMap[item.id]!);
+      }
+    }
+
+    // 3. Encontra os nós raiz
+    List<LocationModel> rootLocations = [];
+    for (var item in locationsEntity) {
+      if (item.parentId == null) {
+        rootLocations.add(locationMap[item.id]!);
+      }
+    }
 
     return AssetThreeModel(
-      locations: buildedTree,
-      componentsWithNoParents: _toComponentModel(componentsWithNoParents),
+      locations: rootLocations,
+      componentsWithNoParents: componentsWithNoParent,
     );
-  }
-
-  List<ComponentModel> _toComponentModel(List<AssetEntity> componentsEntity) {
-    return componentsEntity
-        .map(
-          (e) => ComponentModel(
-            id: e.id,
-            name: e.name,
-            sensorId: e.sensorId!,
-            sensorType: ComponentSensorType.fromName(e.sensorType!),
-            status: ComponentStatus.fromName(e.status!),
-            gatewayId: e.gatewayId!,
-          ),
-        )
-        .toList();
-  }
-
-  List<LocationModel> _buildAssetTree(
-    List<LocationModel> locations,
-    List<AssetEntity> assetsWithLocations,
-    List<AssetEntity> assetsWithParents,
-    List<AssetEntity> componetsWithParents,
-  ) {
-    //Adiciona assets com localizacao na lista
-    for (var i = 0; i < assetsWithLocations.length; i++) {
-      final parentAsset = assetsWithLocations[i];
-
-      //Asset com ou sem sub-assets e com componentes
-      final assetModel = _processAssetsWithParent(
-        parentAsset,
-        assetsWithParents,
-        componetsWithParents,
-      );
-
-      //Adiciona asset na localizacao ou sub-localizacao na locationList, que sera usada;
-      for (var i = 0; i < locations.length; i++) {
-        final location = locations[i];
-        if (location.subLocation != null) {
-          //Asset filho de uma Sub localizacao
-          if (parentAsset.locationId == location.subLocation!.id) {
-            //Adiciona asset na localizacao
-            locations[i].subLocation!.asset = assetModel;
-          }
-        } else {
-          //Asset filho de uma Localizacao sem filho
-          if (parentAsset.locationId == location.id) {
-            //Aduciona asset na localizacao
-            locations[i].asset = assetModel;
-          }
-        }
-      }
-    }
-    return locations;
-  }
-
-  //Adiciona sub-asset se possuir e adiciona componentes
-  AssetModel _processAssetsWithParent(
-    AssetEntity parentAsset,
-    List<AssetEntity> assetsWithParents,
-    List<AssetEntity> componetsWithParents,
-  ) {
-    final parentAssetModel = AssetModel(
-      id: parentAsset.id,
-      name: parentAsset.name,
-      components: _lisOfComponentsLinkedToTheAsset(
-          parentAsset.id, componetsWithParents),
-    );
-
-    //Adicionar sub-asset se possuir
-    for (var childAsset in assetsWithParents) {
-      if (childAsset.parentId == parentAsset.id) {
-        //Adiciona asset filho
-
-        final childAssetModel = AssetModel(
-          id: childAsset.id,
-          name: childAsset.name,
-          components: _lisOfComponentsLinkedToTheAsset(
-              childAsset.id, componetsWithParents),
-        );
-        parentAssetModel.subAsset = childAssetModel;
-      }
-    }
-
-    return parentAssetModel;
-  }
-
-  ///Retorna a lista de componentes linkados ao ativo
-  List<ComponentModel>? _lisOfComponentsLinkedToTheAsset(
-      String assetId, List<AssetEntity> componetsWithParents) {
-    List<ComponentModel> componentsModel = [];
-    for (var i = 0; i < componetsWithParents.length; i++) {
-      final compWithParent = componetsWithParents[i];
-
-      //Adiciona componente no asset
-      if (compWithParent.parentId == assetId) {
-        final componentModel = ComponentModel(
-          id: compWithParent.id,
-          name: compWithParent.name,
-          sensorId: compWithParent.sensorId!,
-          sensorType: ComponentSensorType.fromName(compWithParent.sensorType!),
-          status: ComponentStatus.fromName(compWithParent.status!),
-          gatewayId: compWithParent.gatewayId!,
-        );
-        componentsModel.add(componentModel);
-      }
-    }
-    return componentsModel.isNotEmpty ? componentsModel : null;
   }
 }
