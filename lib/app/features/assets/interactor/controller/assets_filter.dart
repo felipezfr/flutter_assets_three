@@ -1,91 +1,166 @@
-// import '../models/asset_model.dart';
-// import '../models/component_model.dart';
-// import '../models/location_model.dart';
+import 'package:tractian_challenge/app/features/assets/interactor/models/location_model.dart';
 
-// class AssetsFilter {
-//   LocationModel? filterLocation(
-//       LocationModel? location,
-//       ComponentSensorType? sensorType,
-//       ComponentStatus? status,
-//       String? searchText) {
-//     if (location == null) {
-//       return null;
-//     }
+import '../models/asset_model.dart';
+import '../models/component_model.dart';
 
-//     if (location.subLocations == null) {
-//       //Entrar no asset
-//       location.asset =
-//           filterAsset(location.asset, sensorType, status, searchText);
+class AssetsFilter {
+  final ComponentSensorType? sensorType;
+  final ComponentStatus? status;
+  final String? searchText;
 
-//       if (location.asset == null) {
-//         return null;
-//       }
+  AssetsFilter({this.sensorType, this.status, this.searchText});
 
-//       return location;
-//     } else {
-//       //Entar na sub-localizacao
-//       final filteredSubLocation =
-//           filterLocation(location.subLocations, sensorType, status, searchText);
-//       if (filteredSubLocation == null) {
-//         return null;
-//       }
-//       location.subLocations = filteredSubLocation;
-//       return location;
-//     }
-//   }
+  List<ComponentModel>? filterComponents(List<ComponentModel> components,
+      [int level = 0]) {
+    List<ComponentModel>? componentsFiltered;
+    for (var component in components) {
+      bool containText = false;
+      if (searchText != null) {
+        containText =
+            component.name.toLowerCase().contains((searchText!).toLowerCase());
+      }
 
-//   AssetModel? filterAsset(AssetModel? asset, ComponentSensorType? sensorType,
-//       ComponentStatus? status, String? searchText) {
-//     if (asset == null) {
-//       return null;
-//     }
+      if (component.sensorType == sensorType ||
+          component.status == status ||
+          containText) {
+        componentsFiltered ??= [];
+        componentsFiltered.add(component);
+      }
+    }
+    return componentsFiltered;
+  }
 
-//     if (asset.subAsset == null) {
-//       //Entrar nos componentes
-//       if (asset.components == null) {
-//         return null;
-//       }
-//       //Assest pai tem componentes
+  // Imprimir a hierarquia para verificação
+  List<AssetModel>? filterAssets(List<AssetModel> assets, [int level = 0]) {
+    List<AssetModel>? assetsFiltered;
+    for (var asset in assets) {
+      final newAssetModel = asset;
+      bool hasAdd = false;
 
-//       final filteredComp =
-//           filterComponents(asset.components, sensorType, status, searchText);
-//       if (filteredComp == null) {
-//         return null;
-//       }
-//       //Retorna asset com componentes filtrados
-//       asset.components = filteredComp;
-//       return asset;
-//     } else {
-//       //Entrar no sub-asset e depois nos componentes
-//       final subAssetFiltered =
-//           filterAsset(asset.subAsset, sensorType, status, searchText);
-//       if (subAssetFiltered == null) {
-//         return null;
-//       }
-//       asset.subAsset = subAssetFiltered;
-//       return asset;
-//     }
-//   }
+      if (asset.subAssets != null) {
+        final filteredSubAsset = filterAssets(asset.subAssets!, level + 1);
+        if (filteredSubAsset != null) {
+          newAssetModel.subAssets = filteredSubAsset;
+          hasAdd = true;
+        }
+      }
+      if (asset.components != null) {
+        final compFiltered = filterComponents(asset.components!, level + 1);
+        if (compFiltered != null) {
+          newAssetModel.components = compFiltered;
+          hasAdd = true;
+        }
+      }
+      //Filtro texto
+      if (searchText != null) {
+        if (asset.name.toLowerCase().contains((searchText!).toLowerCase())) {
+          hasAdd = true;
+        }
+      }
+      if (hasAdd) {
+        assetsFiltered ??= [];
+        assetsFiltered.add(asset);
+      }
+    }
+    return assetsFiltered;
+  }
 
-//   List<ComponentModel>? filterComponents(
-//       List<ComponentModel>? components,
-//       ComponentSensorType? sensorType,
-//       ComponentStatus? status,
-//       String? searchText) {
-//     if (components == null || components.isEmpty) {
-//       return null;
-//     }
-//     //Remove componentes que nao se encaixam no filtro
-//     if (sensorType != null) {
-//       components.removeWhere((element) => element.sensorType != sensorType);
-//     }
-//     if (status != null) {
-//       components.removeWhere((element) => element.status != status);
-//     }
-//     if (searchText != null) {
-//       components.removeWhere((element) =>
-//           !element.name.toLowerCase().contains(searchText.toLowerCase()));
-//     }
-//     return components.isNotEmpty ? components : null;
-//   }
-// }
+  // Imprimir a hierarquia para verificação
+  List<LocationModel>? filterLocations(List<LocationModel> locations,
+      [int level = 0]) {
+    List<LocationModel>? locationsFiltered;
+    for (var location in locations) {
+      final newLocModel = location;
+      bool hasAdd = false;
+      if (location.components != null) {
+        final compFiltered = filterComponents(location.components!, level + 1);
+        if (compFiltered != null) {
+          newLocModel.components = compFiltered;
+          hasAdd = true;
+        }
+      }
+      if (location.subLocations != null) {
+        final subLocFiltered =
+            filterLocations(location.subLocations!, level + 1);
+        if (subLocFiltered != null) {
+          newLocModel.subLocations = subLocFiltered;
+          hasAdd = true;
+        }
+      }
+      if (location.assets != null) {
+        final assetFiltered = filterAssets(location.assets!, level + 1);
+        if (assetFiltered != null) {
+          newLocModel.assets = assetFiltered;
+          hasAdd = true;
+        }
+      }
+
+      //Filtro texto
+      if (searchText != null) {
+        if (location.name.toLowerCase().contains((searchText!).toLowerCase())) {
+          hasAdd = true;
+        }
+      }
+
+      if (hasAdd) {
+        locationsFiltered ??= [];
+        locationsFiltered.add(location);
+      }
+    }
+    return locationsFiltered;
+  }
+
+  // void printTree(List<LocationModel>? locations) {
+  //   if (locations == null) {
+  //     return;
+  //   }
+
+  //   print('===================================================');
+
+  //   // Imprimir a hierarquia para verificação
+  //   void printComponent(List<ComponentModel> components, [int level = 0]) {
+  //     for (var component in components) {
+  //       print('${'  ' * level}COMPONENT:${component.name}');
+  //     }
+  //   }
+
+  //   // Imprimir a hierarquia para verificação
+  //   void printAsset(List<AssetModel> assets, [int level = 0]) {
+  //     for (var asset in assets) {
+  //       print('${'  ' * level}${asset.name}');
+  //       if (asset.components != null) {
+  //         printComponent(asset.components!, level + 1);
+  //       }
+  //       if (asset.subAssets != null) {
+  //         printAsset(asset.subAssets!, level + 1);
+  //       }
+  //     }
+  //   }
+
+  //   // Imprimir a hierarquia para verificação
+  //   void printLocations(List<LocationModel> locations, [int level = 0]) {
+  //     for (var location in locations) {
+  //       print('${'  ' * level}${location.name}');
+  //       if (location.components != null) {
+  //         printComponent(location.components!, level + 1);
+  //       }
+  //       if (location.subLocations != null) {
+  //         printLocations(location.subLocations!, level + 1);
+  //       }
+  //       if (location.assets != null) {
+  //         printAsset(location.assets!, level + 1);
+  //       }
+  //     }
+  //   }
+
+  //   //
+
+  //   final rootLocations = filterLocations(locations);
+
+  //   if (rootLocations != null) {
+  //     printLocations(rootLocations);
+  //   } else {
+  //     print('Arvore vazia');
+  //   }
+  // }
+}

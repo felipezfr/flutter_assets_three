@@ -5,9 +5,9 @@ import '../models/asset_three_model.dart';
 import '../models/component_model.dart';
 import '../models/location_model.dart';
 
-class AssetsThree {
+class AssetsTree {
   ///Constroi o model da arvore
-  AssetThreeModel build(
+  AssetTreeModel build(
       List<LocationEntity> locationsEntity, List<AssetEntity> assetsEntity) {
     // 1. Construi um mapa de id para LocationModel
     Map<String, LocationModel> locationMap = {};
@@ -81,7 +81,7 @@ class AssetsThree {
       }
     }
 
-    return AssetThreeModel(
+    return AssetTreeModel(
       locations: rootLocations,
       componentsWithNoParents: componentsWithNoParent,
     );

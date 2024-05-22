@@ -5,7 +5,7 @@ class AssetsInitialState extends InitialState {}
 
 class AssetsLoadingState extends LoadingState {}
 
-class AssetsSuccessState extends SuccessState<AssetThreeModel?> {
+class AssetsSuccessState extends SuccessState<AssetTreeModel?> {
   AssetsSuccessState({required super.data});
 }
 

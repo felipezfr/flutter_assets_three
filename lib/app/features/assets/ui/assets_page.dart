@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/alert/alerts.dart';
 import '../../../core/states/base_state.dart';
 import '../interactor/controller/assets_controller.dart';
+import '../interactor/models/component_model.dart';
 import '../interactor/state/assets_state.dart';
 import 'widgets/component_widget.dart';
 import 'widgets/filter_widget.dart';
@@ -27,7 +28,7 @@ class _AssetsPageState extends State<AssetsPage> {
   @override
   void initState() {
     super.initState();
-    controller.getAssetsThree(widget.companyId);
+    controller.getAssetsTree(widget.companyId);
     controller.addListener(listener);
   }
 
@@ -37,47 +38,25 @@ class _AssetsPageState extends State<AssetsPage> {
     }
   }
 
+  bool energyFilter = false;
+  bool criticalFilter = false;
+
   @override
   void dispose() {
     controller.removeListener(listener);
     super.dispose();
   }
 
-  // void filterThree(
-  //     {ComponentSensorType? sensorType,
-  //     ComponentStatus? status,
-  //     String? searchText}) async {
-  //   final three1 = controller.value as AssetsSuccessState;
-  //   controller.resetThree();
-  //   // await Future.delayed(const Duration(seconds: 2));
-  //   final three = controller.value as AssetsSuccessState;
+  void filter() {
+    final sensorType = energyFilter ? ComponentSensorType.energy : null;
+    final status = criticalFilter ? ComponentStatus.alert : null;
 
-  //   final locations = three.data?.locations;
-  //   final componentsWithNoParents = three.data?.componentsWithNoParents;
-  //   if (locations == null) {
-  //     return;
-  //   }
-
-  //   final List<LocationModel> filteredLocations = [];
-
-  //   for (var location in locations) {
-  //     final filtered = AssetsFilter()
-  //         .filterLocation(location, sensorType, status, searchText);
-  //     if (filtered != null) {
-  //       filteredLocations.add(filtered);
-  //     }
-  //   }
-
-  //   final filteredComponents = AssetsFilter().filterComponents(
-  //       componentsWithNoParents, sensorType, status, searchText);
-
-  //   controller.updateThree(
-  //     AssetThreeModel(
-  //       locations: filteredLocations,
-  //       componentsWithNoParents: filteredComponents,
-  //     ),
-  //   );
-  // }
+    if (!energyFilter && !criticalFilter) {
+      controller.resetTree();
+    } else {
+      controller.filterTree(sensorType: sensorType, status: status);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +83,7 @@ class _AssetsPageState extends State<AssetsPage> {
                         child: SearchWidget(
                           hitText: 'Buscar Ativo ou Local',
                           onSearch: (value) {
-                            // filterThree(searchText: value);
+                            controller.filterTree(searchText: value);
                           },
                         ),
                       ),
@@ -118,9 +97,11 @@ class _AssetsPageState extends State<AssetsPage> {
                             FilterWidget(
                               assetPath: 'assets/icons/bolt.png',
                               label: 'Sensor de Energia',
+                              isPressed: energyFilter,
                               onTap: () {
-                                // filterThree(
-                                //     sensorType: ComponentSensorType.energy);
+                                energyFilter = !energyFilter;
+                                criticalFilter = false;
+                                filter();
                               },
                             ),
                             const SizedBox(
@@ -129,10 +110,11 @@ class _AssetsPageState extends State<AssetsPage> {
                             FilterWidget(
                               assetPath: 'assets/icons/alert.png',
                               label: 'Crítico',
+                              isPressed: criticalFilter,
                               onTap: () {
-                                //   filterThree(
-                                //   status: ComponentStatus.alert,
-                                // );
+                                criticalFilter = !criticalFilter;
+                                energyFilter = false;
+                                filter();
                               },
                             ),
                           ],

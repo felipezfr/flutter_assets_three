@@ -1,11 +1,11 @@
 import 'package:tractian_challenge/app/features/assets/interactor/models/component_model.dart';
 import 'package:tractian_challenge/app/features/assets/interactor/models/location_model.dart';
 
-class AssetThreeModel {
-  List<LocationModel>? locations;
-  List<ComponentModel>? componentsWithNoParents;
+class AssetTreeModel {
+  final List<LocationModel>? locations;
+  final List<ComponentModel>? componentsWithNoParents;
 
-  AssetThreeModel({
+  AssetTreeModel({
     this.locations,
     this.componentsWithNoParents,
   });
