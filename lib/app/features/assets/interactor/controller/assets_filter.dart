@@ -1,3 +1,4 @@
+import 'package:tractian_challenge/app/features/assets/interactor/models/asset_three_model.dart';
 import 'package:tractian_challenge/app/features/assets/interactor/models/location_model.dart';
 
 import '../models/asset_model.dart';
@@ -108,6 +109,26 @@ class AssetsFilter {
       }
     }
     return locationsFiltered;
+  }
+
+  AssetTreeModel? filterTree(AssetTreeModel? tree) {
+    if (tree == null) {
+      return null;
+    }
+
+    List<LocationModel>? filteredLocation;
+    List<ComponentModel>? filteredComponents;
+
+    if (tree.locations != null) {
+      filteredLocation = filterLocations(tree.locations!);
+    }
+    if (tree.componentsWithNoParents != null) {
+      filteredComponents = filterComponents(tree.componentsWithNoParents!);
+    }
+    return AssetTreeModel(
+      locations: filteredLocation,
+      componentsWithNoParents: filteredComponents,
+    );
   }
 
   // void printTree(List<LocationModel>? locations) {

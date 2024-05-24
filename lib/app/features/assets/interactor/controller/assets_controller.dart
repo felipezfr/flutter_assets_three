@@ -15,9 +15,9 @@ class AssetsController extends BaseController {
     this.repository,
   ) : super(AssetsInitialState());
 
-  late final AssetTreeModel? _originalData;
+  late final AssetTreeModel? _originalTreeData;
 
-  AssetTreeModel? get originalData => _originalData;
+  AssetTreeModel? get originalTreeData => _originalTreeData;
 
   Future<void> getAssetsTree(String companyId) async {
     update(AssetsLoadingState());
@@ -46,7 +46,7 @@ class AssetsController extends BaseController {
 
     final treeModel = AssetsTree().build(locationsEntity, assetsEntity);
 
-    _originalData = treeModel;
+    _originalTreeData = treeModel;
     update(AssetsSuccessState(data: treeModel));
   }
 
@@ -54,30 +54,14 @@ class AssetsController extends BaseController {
       {ComponentSensorType? sensorType,
       ComponentStatus? status,
       String? searchText}) async {
-    final locations = originalData?.locations ?? [];
-    final components = originalData?.componentsWithNoParents ?? [];
-    // final currentTree = (value as AssetsSuccessState).data;
-    // final locations = currentTree?.locations ?? [];
-    // final components = currentTree?.componentsWithNoParents ?? [];
-
-    final loctionsFiltered = AssetsFilter(
+    final treeFiltered = AssetsFilter(
             sensorType: sensorType, status: status, searchText: searchText)
-        .filterLocations(locations);
-    final componentsFiltered = AssetsFilter(
-            sensorType: sensorType, status: status, searchText: searchText)
-        .filterComponents(components);
+        .filterTree(originalTreeData);
 
-    update(
-      AssetsSuccessState(
-        data: AssetTreeModel(
-          locations: loctionsFiltered,
-          componentsWithNoParents: componentsFiltered,
-        ),
-      ),
-    );
+    update(AssetsSuccessState(data: treeFiltered));
   }
 
   void resetTree() {
-    update(AssetsSuccessState(data: originalData));
+    update(AssetsSuccessState(data: originalTreeData));
   }
 }
